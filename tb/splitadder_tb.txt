@@ -1,0 +1,38 @@
+`timescale 1ns / 1ps
+
+module tb_splitadder;
+    reg clk;
+    reg reset;
+    reg [19:0] in_data;
+    wire [9:0] out_data;
+
+    // Instantiate the splitadder module
+    splitadder uut (
+        .clk(clk),
+        .reset(reset),
+        .in(in_data),
+        .out(out_data)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    
+
+    // Stimulus generation
+    always@(posedge clk) begin
+        // Test case 1: in = 20'd0
+        in_data = 20'd4095;
+        #100;
+
+        // Test case 2: in = 20'd1024
+      //  in_data = 20'd4196;
+        //#25;
+
+        $stop;
+    end
+
+endmodule

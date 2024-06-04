@@ -1,0 +1,58 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 14.03.2024 07:46:55
+// Design Name: 
+// Module Name: prng_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+`timescale 1ns / 1ps
+
+module prng_tb;
+
+    
+    parameter CLK_PERIOD = 10; 
+    
+
+    reg clk;
+    reg reset;
+    wire [9:0] prng_out;
+    
+
+    prng uut (
+        .clk(clk),
+        .reset(reset),
+        .prng_out(prng_out)
+    );
+    
+
+    always #((CLK_PERIOD/2)) clk = ~clk;
+
+    initial begin
+        clk = 0;
+        reset = 1;
+        
+        #50 reset = 0; 
+        #250 $finish;
+    end
+    
+
+    always @(posedge clk) begin
+        $display("prng_out = %d", prng_out);
+    end
+    
+endmodule

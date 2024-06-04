@@ -1,0 +1,47 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 14.01.2024 21:35:22
+// Design Name: 
+// Module Name: processing_element
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module processing_element#(parameter N=4)(
+            input wire clk,
+            input wire reset,
+            input wire [2*N-1:0]sum,
+            input wire [1:0] multiplier,
+            input wire [N-1:0] multiplicand,
+            output reg [2*N-1:0]out
+    );
+    
+
+    reg [2*N-1:0] mult_store=0;
+    reg [2*N-1:0] add_store=0;
+    
+    always@(posedge clk) 
+      begin
+      
+        //cycle 1
+        mult_store <= multiplier*multiplicand;
+        add_store <= sum;
+        
+        //cycle 2
+        out <= add_store+mult_store;
+        
+      end   
+endmodule

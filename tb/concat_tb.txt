@@ -1,0 +1,54 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11.03.2024 10:48:03
+// Design Name: 
+// Module Name: concat_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+module concat_tb #(N_BIT=10);
+
+    reg clk = 0; // Initialize clk to 0
+    reg reset;
+    reg [N_BIT-1:0] a;
+    reg [N_BIT-1:0] b;
+    wire [2*N_BIT-1:0] out;
+
+    // Instantiate the concat module
+    concat #(10) uut (
+        .clk(clk),
+        .reset(reset),
+        .a(a),
+        .b(b),
+        .out(out)
+    );
+
+    // Clock generation
+    always begin
+        #5 clk = ~clk;
+    end
+
+    // Initial block for simulation setup
+    always@(posedge clk)
+     begin // Changed always@(posedge clk) to initial begin
+        reset = 1; // Assert reset
+        a = 10'd1024;
+        b = 10'd1024;
+        #20 reset = 0; // Deassert reset after 10 time units
+        #100 $finish;
+    end
+
+endmodule

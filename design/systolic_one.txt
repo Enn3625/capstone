@@ -1,0 +1,34 @@
+module systolic_one #( parameter NUM_PES=4) (
+  input wire clk,
+  input wire reset,
+  input wire sa_mode,
+  input wire [NUM_PES*2-1:0] multiplier_data,
+  input wire [31:0] multiplicand_data,
+  output wire [31:0] out_data //[2*N-1:0]
+);
+ // reg[31:0] sum;
+  wire [31:0]  pe_inst_out [NUM_PES-1:0];
+
+  genvar i;
+  //genvar j;
+  generate
+  //for(j=0;j<4;j=j+1)begin
+    for (i = 0; i < NUM_PES; i=i+1)begin
+      pe_optimized PE_inst (
+        .clk(clk),
+        .reset(reset),
+        .sa_mode(sa_mode),
+        .sum((i == 0) ? 32'sd0 : pe_inst_out[i-1]),  
+        .multiplier(multiplier_data[2*i+1:2*i]),  
+        .multiplicand(multiplicand_data),  
+        .out(pe_inst_out[i])
+      );
+      
+      end
+      
+   // end
+   
+  endgenerate
+  assign out_data = pe_inst_out[NUM_PES-1];
+  
+endmodule

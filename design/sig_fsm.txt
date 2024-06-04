@@ -1,0 +1,196 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 18.03.2024 21:41:00
+// Design Name: 
+// Module Name: sig_fsm
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module sig_fsm (
+  input clk,
+  input reset,
+  input start,
+  input [4:0] num_inp,
+  output reg [9:0]key_ram_read_addr,
+  output reg key_ram_read,
+  //addr_mult,
+  output reg done,
+  output reg poly_read,
+  //output reg poly_read_count,
+  output reg [9:0] poly_read_addr,
+  output reg out_wr_en,
+  output reg [9:0] out_wr_addr,
+  output reg sel
+);
+//message ram - readaddress and read enable ,
+//
+  
+  reg [9:0] key_read_count;
+  reg [2:0]  next_state;
+  reg [2:0] current_state;
+  parameter IDLE = 3'b000,
+            COUNT = 3'b001,
+            HOLD = 3'b010,
+            DONE = 3'b011;
+            //DEFAULT = 3'b111;
+
+  always@(posedge clk,posedge reset)begin
+    if(reset)
+        next_state <= IDLE;
+    else
+        current_state <= next_state;
+    end
+    
+  
+  
+  
+  //key_raead_count incrememnt and setting poly read signal to one in the count state
+  //this indicates that first pk has been read and we are moving on to second pk(piblic key)
+  always@(posedge clk,posedge reset)begin
+    if(reset) 
+       key_read_count <= 0;
+    else begin
+       if (current_state == COUNT && key_read_count == 1023)
+          poly_read <= 1;
+       else 
+          poly_read <= 0;
+       end
+     end
+     
+   // this is for setting poly read back to 0 after we are done reading all the polynomials 
+   // in the reduction module
+   always@(posedge clk,posedge reset)begin
+     if(reset)
+       poly_read <= 0;
+     else begin
+       if(current_state == HOLD && poly_read_addr == 1023)
+          poly_read <= 0;
+       else
+          poly_read <= 1;
+       end
+     end
+   
+   
+   // this is to set reading of the keyram or the BRAM for the pks to 1 once the start signal is 1  
+   always@(posedge clk,posedge reset) begin
+     if(reset)
+       key_ram_read <= 1;
+     else begin
+       if(start == 1)  
+          key_ram_read <= 1;
+       else if(done == 1)
+          key_ram_read <= 0;
+       else 
+          key_ram_read <= key_ram_read;
+      end
+   end
+   
+   // count keeps increasing if key read is 1 else no
+   always@(posedge clk,posedge reset) begin
+     if(reset)
+       key_read_count <= 0;
+     else begin
+        if(key_ram_read == 1)
+           key_read_count <= key_read_count +1;
+        else 
+            key_read_count <= 0;
+      end
+   end
+   
+   // setting bram_read_addr to 0 or 1/4 since we have only 2 public keys to read in encryption
+   always@(posedge clk) begin
+     if(start || done)
+        key_ram_read_addr <= 0;
+     else if(key_read_count == 1023)
+        key_ram_read_addr <= 1;
+     end
+     
+   //  to icnrease poly reading address everytime poly read signal is high
+   always@(posedge clk) begin
+     if(reset)
+       poly_read <= 0;
+     else begin
+       if(poly_read == 1)
+          poly_read_addr <= poly_read_addr+1;
+       else
+          poly_read_addr <= 0;
+       end
+   end
+   
+   //out write enable is 1 then write to address of output bram
+   always@(posedge clk,posedge reset)begin
+      if(reset)
+         out_wr_addr <= 0;
+      else begin
+         if(out_wr_en == 1)
+           out_wr_addr <= out_wr_addr + 1;
+         else 
+           out_wr_addr <= 0;
+       end
+   end
+          
+       
+  //state transition logic  
+  always@(*) begin
+    
+    case(current_state)
+        //idle to count
+        IDLE: if(start) 
+                begin
+                    next_state = COUNT;
+                end
+            else
+                begin
+                    next_state = IDLE;
+                end
+        //count to hold
+        COUNT: if(key_read_count == 10'd1023)
+                begin
+                    next_state = HOLD;
+      //              count = 10'd0;
+                end
+             else
+                begin
+                    next_state = COUNT;
+      //              count = count+ 10'd1;
+                end
+         //hold to finish or hold back to count(not possible since we have set no of ips to 1)
+         HOLD: if(poly_read_addr == 1023)
+                 begin
+                    next_state = DONE;
+                 end
+               else
+                 begin
+                    next_state = HOLD;
+                 end
+           
+         DONE: if(out_wr_en == 0)
+                 begin
+                     next_state = IDLE;
+                 end
+               else
+                  begin
+                      next_state = DONE;
+                  end
+          
+         default: next_state = IDLE;
+      endcase  
+   end            
+   
+                   
+endmodule
+

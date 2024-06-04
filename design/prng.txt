@@ -1,0 +1,128 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 24.01.2024 22:29:15
+// Design Name: 
+// Module Name: prng
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module prng(
+        input wire clk,
+        input wire reset,
+        
+        output wire [9:0] prng_out
+    );
+    
+    wire [19:0] lfsr_out;
+    wire [19:0] r1_out;
+    wire [19:0] r2_out;
+    wire [19:0] r3_out;
+    wire [9:0] s1_out;
+    wire [9:0] s2_out;
+    wire [9:0] s3_out;
+    wire [9:0] s4_out;
+    wire [9:0] s5_out;
+    wire [9:0] s6_out;
+    wire [9:0] s7_out;
+    wire [19:0] conc1;
+    wire [19:0] conc2;
+    wire [19:0] conc3;
+    
+    // LEVEL 1
+    lfsr l1(
+        .clock(clk),
+        .reset(reset),
+        .rnd(lfsr_out));
+   
+   //LEVEL 2
+    rotation #(.R_BIT(3)) r1(
+        .clk(clk),
+        .reset(reset),
+        .in(lfsr_out),
+        .out(r1_out));
+        
+    rotation #(.R_BIT(5)) r2(
+        .clk(clk),
+        .reset(reset),
+        .in(lfsr_out),
+        .out(r2_out));
+        
+        
+    rotation #(.R_BIT(7)) r3(
+        .clk(clk),
+        .reset(reset),
+        .in(lfsr_out),
+        .out(r3_out));
+     
+    //LEVEL 3   
+    splitadder s1(
+        .clk(clk),
+        .reset(reset),
+        .in(lfsr_out),
+        .out(s1_out));
+    
+    splitadder s2(
+        .clk(clk),
+        .reset(reset),
+        .in(r1_out),
+        .out(s2_out));
+     
+    splitadder s3(
+        .clk(clk),
+        .reset(reset),
+        .in(r2_out),
+        .out(s3_out));
+        
+    splitadder s4(
+        .clk(clk),
+        .reset(reset),
+        .in(r3_out),
+        .out(s4_out));
+        
+    //LEVEL4    
+     assign conc1 = {s1_out,s2_out};
+     assign conc2 = {s3_out,s4_out};
+     
+     //LEVEL 5
+     
+     splitadder s5(
+        .clk(clk),
+        .reset(reset),
+        .in(conc1),
+        .out(s5_out));
+     
+     splitadder s6(
+        .clk(clk),
+        .reset(reset),
+        .in(conc2),
+        .out(s6_out));
+        
+      //LEVEL 7
+     
+     assign conc3 = {s5_out,s6_out};
+     
+     //LEVEL 8
+     
+     splitadder s7(
+        .clk(clk),
+        .reset(reset),
+        .in(conc3),
+        .out(s7_out));     
+        
+     assign prng_out = s7_out;
+    
+endmodule

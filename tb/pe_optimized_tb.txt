@@ -1,0 +1,66 @@
+`timescale 1ns / 1ps
+
+module testbench;
+
+    // Parameters
+    parameter CLK_PERIOD = 10; // Clock period in ns
+    
+    // Signals
+    reg clk;
+    reg reset;
+    reg [31:0] sum;
+    reg sa_mode;
+    reg [1:0] multiplier;
+    reg [31:0] multiplicand;
+    wire [31:0] out;
+    
+    // Instantiate the pe_optimized module
+    pe_optimized dut (
+        .clk(clk),
+        .reset(reset),
+        .sum(sum),
+        .sa_mode(sa_mode),
+        .multiplier(multiplier),
+        .multiplicand(multiplicand),
+        .out(out)
+    );
+    
+    // Clock generation
+    always #10 clk = ~clk;
+    
+    // Initial values
+    initial begin
+        clk = 0;
+        reset = 1;
+        sum = 0;
+        sa_mode = 1; // Change this if needed
+        multiplier = 2'b01; // Initialize multiplier with 0
+        multiplicand = 32'h02153; // Initialize multiplicand with 2 + 5x + 3x^2 + 1x^3
+        
+        #20 reset = 0; // De-assert reset
+        #20 sa_mode = 1; // Change sa_mode if needed
+        
+        // Test vector 1: multiplier = 0b01, multiplicand = 2 + 5x + 3x^2 + 1x^3
+        multiplier = 2'b01;
+        multiplicand = 32'h02153;
+        #100; // Allow time for computation
+        
+        // Test vector 2: multiplier = 0b01, multiplicand = 2 + 5x + 3x^2 + 1x^3
+        multiplier = 2'b01;
+        multiplicand = 32'h02153;
+        #100; // Allow time for computation
+        
+        // Test vector 3: multiplier = 0b10, multiplicand = 2 + 5x + 3x^2 + 1x^3
+        multiplier = 2'b10;
+        multiplicand = 32'h02153;
+        #100; // Allow time for computation
+        
+        // Test vector 4: multiplier = 0b11, multiplicand = 2 + 5x + 3x^2 + 1x^3
+        multiplier = 2'b11;
+        multiplicand = 32'h02153;
+        #100; // Allow time for computation
+        
+        $stop; // End simulation
+    end
+
+endmodule

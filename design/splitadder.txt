@@ -1,0 +1,41 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11.03.2024 09:44:25
+// Design Name: 
+// Module Name: splitadder
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module splitadder(
+    input wire clk,
+    input wire reset,
+    input wire [19:0] in,
+    output reg [9:0] out
+    );
+    
+    reg [9:0] top;
+    reg [9:0] bottom;
+    reg [10:0] intersum;
+    
+    always@(posedge clk) 
+    begin
+       top <= in[19:10];
+       bottom <= in[9:0];
+       intersum <= top + bottom;
+       out <= intersum >> 1;
+    end
+endmodule

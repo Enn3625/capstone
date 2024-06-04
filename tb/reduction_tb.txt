@@ -1,0 +1,63 @@
+`timescale 1ns / 1ps
+
+module reduction_tb();
+    reg clk;
+    reg reset;
+    reg sel;
+    reg signed [31:0] poly_in;
+    wire signed [31:0] poly_out;
+
+    reduction #(
+        .WIDTH(32),
+        .DEPTH(8)
+    ) dut (
+        .clk(clk),
+        .reset(reset),
+        .sel(sel),
+        .poly_in(poly_in),
+        .poly_out(poly_out));
+    
+  reg [7:0] count;
+ 
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+    integer i;
+    // Stimulus generation
+    initial begin
+        reset  = 0;
+       // #20 poly_in = 32'h00000005;
+       // #20 poly_in = 32'h00000000F;
+       //  #20 poly_in = 32'h000000012;
+       //  #20 sel=1; poly_in = 32'h00000014;
+       //  #20 poly_in = 32'h00000000a;
+       //  #20 poly_in = 32'h00000003;
+       @(posedge clk) reset = 1;
+       @(posedge clk); // just a wider pulse
+       @(posedge clk) reset = 0;
+        
+        // Apply different inputs in a loop
+       // for (i = 0; i < 10; i = i + 1) begin
+         //   #10 poly_in = poly_in + 1;
+        //end
+
+        // Finish the simulation
+        #1000 $finish;
+    end
+    
+    always @(posedge clk or posedge reset ) begin
+       if (reset) begin
+          count <= 0;
+          poly_in <= 0;
+          sel <= 0;
+       end
+       else begin
+          count <= count + 1;
+          poly_in <= poly_in+10;
+          sel <= count[3] & count[2];
+       end
+    end
+             
+endmodule

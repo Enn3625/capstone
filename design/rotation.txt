@@ -1,0 +1,38 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 11.03.2024 10:05:53
+// Design Name: 
+// Module Name: rotation
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module rotation #(parameter R_BIT = 2)
+        (
+        input wire clk,
+        input wire reset,
+        input wire[19:0] in,
+        output reg[19:0] out
+    );
+    always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        out <= 20'b0;
+    end else begin
+        out <= {in[R_BIT-1:0], in[19:R_BIT]};
+    end
+end
+    
+endmodule

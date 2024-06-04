@@ -1,0 +1,104 @@
+
+module top_module(
+    input wire clk,
+    input wire reset,
+    input wire start,
+
+    input wire clka, 
+    input wire ena, 
+    input wire [3:0] wea, 
+    input wire [9:0] addra, 
+    input wire [31:0] dina, 
+    output reg [31:0] multiplicand_ram_douta,	
+
+    input wire [4:0] num_inp, 
+    input wire [31:0] multiplicand_data,
+    output wire [31:0] out_data,
+    output reg [9:0] key_ram_read_addr,
+    output reg key_ram_read,
+    output reg done,
+    output reg poly_read,
+    output reg [9:0] poly_read_addr,
+    output reg out_wr_en,
+    output reg [9:0] out_wr_addr,
+    output reg sel,
+    output reg [31:0] gen_out_write_ram,
+    output reg [31:0] out_data_div
+);
+
+parameter NUM_PES = 4;
+parameter WIDTH = 32;
+parameter DEPTH = 8;
+wire [NUM_PES*2-1:0] multiplier_data;
+//reg [31:0] message_read_data;
+wire signed [31:0] poly_in;
+wire [9:0] prng_in;
+wire [31:0] reduction_in;
+
+// Instantiating modules
+
+
+multiplicand_ram multiplicand_ram_inst (
+    .clka(clk), 
+    .ena(start), 
+    .wea(wea), 
+    .addra(addra), 
+    .dina(dina), 
+    .douta(multiplicand_ram_douta) 
+);
+
+polyadd_ram polyadd_ram_inst(
+    .clka(clk), 
+    .ena(start), 
+    .wea(wea), 
+    .addra(addra), 
+    .dina(dina), 
+    .douta(polyadd_ram_douta) 
+);
+
+systolic_one #(.NUM_PES(NUM_PES))
+systolic_inst(
+    .clk(clk),
+    .reset(reset),
+    .sa_mode(start),
+    .multiplier_data(multiplier_data),
+    .multiplicand_data(multiplicand_data),
+    .out_data(out_data)
+);
+
+sig_fsm sig_fsm_inst(
+    .clk(clk),
+    .reset(reset),
+    .start(start),
+    .num_inp(num_inp),
+    .key_ram_read_addr(key_ram_read_addr),
+    .key_ram_read(key_ram_read),
+    .done(done),
+    .poly_read(poly_read),
+    .poly_read_addr(poly_read_addr),
+    .out_wr_en(out_wr_en),
+    .out_wr_addr(out_wr_addr),
+    .sel(sel)
+);
+
+reduction #(.WIDTH(WIDTH), .DEPTH(DEPTH)) reduction_inst(
+    .clk(clk),
+    .reset(reset),
+    .sel(sel),
+    .poly_in(poly_in),
+    .poly_out(reduction_in)
+);
+
+prng prng_inst(
+    .clk(clk),
+    .reset(reset),
+    .prng_out(prng_in)
+);
+
+modulo_divison modulo_divison_inst(
+    .clk(clk),
+    .input_data(gen_out_write_ram),
+    .out_data(out_data_div)
+);
+
+endmodule

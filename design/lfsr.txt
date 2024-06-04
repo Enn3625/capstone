@@ -1,0 +1,49 @@
+module lfsr (
+    input clock,
+    input reset,
+    output wire [19:0] rnd 
+    );
+
+
+reg [19:0] random; 
+reg [19:0] random_next, random_done;
+reg [31:0] count;
+// reg [31:0] count_next; //to keep track of the shifts
+
+// localparam RAND_MAX = 20;
+wire feedback = random[19] ^ random[16] ^ random[0]; 
+
+always @ (posedge clock or posedge reset)
+begin
+ if (reset)
+ begin
+  random <= 20'hABCDF; //An LFSR cannot have an all 0 state, thus reset to FF
+  count <= 0;
+ end
+ else
+ begin
+  random <= {random[18:0],feedback};
+  count <= count+1;
+  // count <= (count == RAND_MAX)? 0 : count+1;
+ end
+end
+
+/*
+always @ (*)
+begin
+
+ if (count == RAND_MAX)
+ begin
+//  count = 0;
+  random_done = random; //assign the random number to output after 13 shifts
+ end
+ else random_done = 0;
+ 
+end
+*/
+
+// assign rnd = random_done;
+assign rnd = random;
+endmodule
+
+

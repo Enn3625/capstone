@@ -1,0 +1,78 @@
+`timescale 1ns / 1ps
+
+module shift_reg #(
+   parameter WIDTH =32,
+   parameter DEPTH= 8
+) (
+   input clk, 
+   input reset, 
+   input wire signed  [WIDTH-1:0] SI, 
+   output wire signed [WIDTH-1:0] SO
+);
+
+// Internal variables
+   reg signed [WIDTH-1:0] shreg [DEPTH-1:0];
+   integer i;
+
+   always @(posedge clk or posedge reset) begin
+      if (reset) begin
+         for (i=0;i<DEPTH;i=i+1) begin
+             shreg[i] <= 0;
+         end
+      end 
+      else begin
+         for (i=0;i<DEPTH;i=i+1) begin
+              if(i==0) begin
+                 shreg[i] <= SI;
+               end
+               else begin
+                  shreg[i] <= shreg[i-1];
+               end
+          end
+      end     
+   end
+   
+   // Output Assignment
+   assign SO = shreg[DEPTH-1];
+
+endmodule
+
+
+module reduction #(
+   parameter WIDTH =32,
+   parameter DEPTH= 8
+) (
+    input wire clk,
+    input wire reset,
+    input wire sel,
+    input wire signed [WIDTH-1:0] poly_in,
+    input wire [9:0] prng_in,
+    input wire [31:0] message_read_data,
+    output reg signed [WIDTH-1:0] gen_out_write_ram
+);
+   wire signed [WIDTH-1:0] poly_out;
+   wire signed [WIDTH-1:0] shreg_out;
+   wire signed [WIDTH-1:0] shreg_in = (sel == 0) ? poly_in : 0;
+   
+// Instantiations
+   shift_reg #(
+   .WIDTH(WIDTH),
+   .DEPTH(DEPTH)) 
+   inst_shreg (
+      .clk   (clk),
+      .reset (reset),
+      .SI    (shreg_in),
+      .SO    (shreg_out)
+   );
+
+   assign poly_out = (sel) ?  (shreg_out-poly_in) :shreg_out;    
+   
+   always@(posedge clk or posedge reset)
+   begin
+      if(reset)
+        gen_out_write_ram <= 0;
+      else
+        gen_out_write_ram <= poly_out + prng_in + message_read_data;
+   end
+
+endmodule

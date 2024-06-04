@@ -1,0 +1,73 @@
+`timescale 1ns / 1ps
+
+module systolic_one_tb;
+
+  // Parameters
+  parameter N = 4;
+  parameter NUM_PES = 4;
+
+  // Signals
+  reg clk;
+  reg reset;
+  reg sa_mode;
+  //sreg [31:0] sum;
+  reg [2*N-1:0] multiplier_data;
+  reg signed [31:0] multiplicand_data;
+  wire signed [31:0] out_data;
+  wire signed [31:0] sum;
+  // Instantiate the module
+  systolic_one #(.N(N), .NUM_PES(NUM_PES)) dut (
+    .clk(clk),
+    .reset(reset),
+    .sa_mode(sa_mode),
+    .multiplier_data(multiplier_data),
+    .multiplicand_data(multiplicand_data),
+    .out_data(out_data)
+  );
+
+  // Clock generation
+  always begin
+    #5 clk = ~clk;
+  end
+
+  // Stimulus
+  initial begin
+    clk = 0;
+    reset = 1;
+    sa_mode = 1;
+    multiplier_data = 8'b01110101;
+    multiplicand_data = 32'b0;
+ //   multiplicand_data = 32'b0011;
+ //   multiplicand_data = 32'b0101;
+ //   multiplicand_data = 32'b0010;
+    @(posedge clk)  reset = 0; 
+    #10000;
+    $finish;
+  end
+  
+  initial begin
+    repeat (5) @(posedge clk);
+    #0 multiplicand_data = 32'b0010;
+    repeat (1) @(posedge clk);
+    #0 multiplicand_data = 32'b0101;
+    repeat (1) @(posedge clk);
+    #0 multiplicand_data = 32'b0011;
+    repeat(1) @(posedge clk);
+    #0 multiplicand_data = 32'b0001;
+    repeat (5) @(posedge clk);
+  end
+/*
+   #100;
+    multiplicand_data = 32'b0011;
+
+    #100;
+    multiplicand_data = 32'b0101;
+    
+    #100;
+    multiplicand_data = 32'b0010;
+    
+    
+    
+    $display("Output: %h", out_data);
+    */
+endmodule

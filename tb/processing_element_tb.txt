@@ -1,0 +1,51 @@
+`timescale 1ns / 1ps
+
+module processing_element_tb();
+
+    
+    parameter N = 3;
+    
+    
+    reg clk=0;
+    reg reset;
+    reg [2*N-1:0] sum;
+    reg sa_mode;
+    reg [N-1:0] multiplier;
+    reg [N-1:0] multiplicand;
+    wire [2*N-1:0] out;
+    
+    
+    processing_element#(N) uut (
+        .clk(clk),
+        .reset(reset),
+        .sum(sum),
+        .sa_mode(sa_mode),
+        .multiplier(multiplier),
+        .multiplicand(multiplicand),
+        .out(out)
+    );
+    
+    
+    always #5 clk = ~clk;
+    
+    
+    always@(posedge clk)
+     begin
+        reset=1;
+        sum = 0;
+        //sa_mode = 0;
+        multiplier = 3; 
+        multiplicand = 2; 
+        
+        #20 reset=0;
+        
+        #20 multiplier = 4;
+        #20 multiplicand = 3;
+        #20 sum = 5;
+
+        #100 $finish;
+    end
+    
+
+    
+endmodule

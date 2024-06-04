@@ -1,0 +1,89 @@
+`timescale 1ns / 1ps
+
+module top_module_tb;
+
+  // Define signals
+  reg clk;
+  reg reset;
+  reg start;
+  // Define other input signals as needed
+  // For example: reg [4:0] num_inp;
+  //              reg [31:0] multiplicand_data;
+
+  wire [31:0] out_data;
+  wire [9:0] key_ram_read_addr;
+  wire key_ram_read;
+  wire done;
+  wire poly_read;
+  wire [9:0] poly_read_addr;
+  wire out_wr_en;
+  wire [9:0] out_wr_addr;
+  wire sel;
+  // Define other output signals as needed
+
+  // Instantiate top module
+  top_module UUT (
+    .clk(clk),
+    .reset(reset),
+    .start(start),
+    // Connect other inputs and outputs as needed
+    // For example: .num_inp(num_inp),
+    //              .multiplicand_data(multiplicand_data),
+    .out_data(out_data),
+    .key_ram_read_addr(key_ram_read_addr),
+    .key_ram_read(key_ram_read),
+    .done(done),
+    .poly_read(poly_read),
+    .poly_read_addr(poly_read_addr),
+    .out_wr_en(out_wr_en),
+    .out_wr_addr(out_wr_addr),
+    .sel(sel)
+  );
+
+  // Clock generation
+  initial begin
+    clk = 0;
+    forever #5 clk = ~clk; // Assuming 10ns clock period
+  end
+
+  // Reset generation
+  initial begin
+    reset = 1;
+    #10 reset = 0;
+    // Add additional reset pulses as needed
+  end
+
+  // Stimulus generation
+  initial begin
+    // Provide stimulus to input signals here
+    // For example:
+    // num_inp = 5'b10101;
+    // multiplicand_data = 32'b1100110000;
+    // start = 1;
+    // Add additional stimulus as needed
+    // Make sure to synchronize stimulus with clock edges
+    // Add delays between stimuli if required
+    // Use $display or $monitor for debugging
+    $display("Stimulus generation started...");
+    #20 start = 1;
+    #100;
+    $display("Stimulus generation finished.");
+  end
+
+  // Monitor outputs
+  always @(posedge clk) begin
+    // Add code to monitor outputs and display their values
+    // For example:
+    //$display("out_data = %h, done = %b", out_data, done);
+    // Use $display or $monitor for debugging
+    $display("out_data = %h, done = %b", out_data, done);
+  end
+
+  // Simulation control
+  initial begin
+    // Add code to control simulation duration or other parameters
+    // For example:
+     #1000 $finish; // Terminate simulation after 1000 time units
+  end
+
+endmodule
